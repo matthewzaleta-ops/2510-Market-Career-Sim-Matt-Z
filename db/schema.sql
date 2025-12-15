@@ -5,8 +5,8 @@ DROP TABLE IF EXISTS users;
 
 CREATE TABLE users(
 id UUID PRIMARY KEY,
-username VARCHAR(100) UNIQUE NOT NULL,
-password VARCHAR(100) NOT NULL
+username text UNIQUE NOT NULL,
+password text NOT NULL
 );
 
 CREATE TABLE orders(
@@ -26,6 +26,6 @@ price DECIMAL NOT NULL
 CREATE TABLE orders_products(
 order_id UUID REFERENCES orders(id) NOT NULL,
 product_id UUID REFERENCES products(id) NOT NULL,
-quantity INTEGER DEFAULT 1,
+quantity INTEGER NOT NULL,
 CONSTRAINT product_and_order_key UNIQUE(product_id, order_id)
 );

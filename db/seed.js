@@ -1,6 +1,8 @@
 import db from "#db/client";
 import { createProduct } from "./products.js";
 import { createUser } from "./users.js";
+import { createOrder, getOrdersByUserId } from "./orders.js";
+import { createOrderProduct } from "./orders_products.js";
 
 await db.connect();
 await seed();
@@ -66,8 +68,11 @@ async function seed() {
     },
   ];
 
+  const createdProducts = [];
+
   for (const product of products) {
-    await createProduct(product);
+    const createdProduct = await createProduct(product);
+    createdProducts.push(createdProduct);
   }
 
   const users = [
@@ -85,7 +90,38 @@ async function seed() {
     },
   ];
 
+  const createdUsers = [];
+
   for (const user of users) {
-    await createUser(user);
+    const createdUser = await createUser(user);
+    createdUsers.push(createdUser);
+  }
+
+  const matt = createdUsers.find((u) => u.username === "Matt");
+
+  const mattOrder = await createOrder({
+    date: "2025-12-12",
+    note: "First order",
+    user_id: matt.id,
+  });
+
+  const findProduct = (title) => createdProducts.find((p) => p.title === title);
+
+  const orders_products = [
+    { title: "Omega Seamaster", quantity: 2 },
+    { title: "Rolex Submariner", quantity: 1 },
+    { title: "IWC Spitfire", quantity: 1 },
+    { title: "Rolex Milgauss", quantity: 1 },
+    { title: "Omega Speedmaster", quantity: 1 },
+  ];
+
+  for (const item of orders_products) {
+    const product = findProduct(item.title);
+
+    await createOrderProduct({
+      order_id: mattOrder.id,
+      product_id: product.id,
+      quantity: item.quantity,
+    });
   }
 }

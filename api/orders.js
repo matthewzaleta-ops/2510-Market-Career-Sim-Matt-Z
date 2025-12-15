@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 export default router;
 
-import { createOrder, getOrderById, getOrderssByUserId } from "#db/orders";
+import { createOrder, getOrderById, getOrdersByUserId } from "#db/orders";
 import { createOrderProduct } from "#db/orders_products";
 import { getProductsByOrderId } from "#db/products";
 import requireUser from "#middleware/requireUser";
@@ -15,36 +15,36 @@ router.get("/", async (req, res) => {
   res.send(orders);
 });
 
-router.post("/", requireBody(["name", "description"]), async (req, res) => {
-  const { name, description } = req.body;
-  const order = await createOrder(name, description, req.user.id);
+router.post("/", requireBody(["date", "note"]), async (req, res) => {
+  const { date, note } = req.body;
+  const order = await createOrder(date, note, req.user.id);
   res.status(201).send(order);
 });
 
 router.param("id", async (req, res, next, id) => {
-  const playlist = await getPlaylistById(id);
-  if (!playlist) return res.status(404).send("Playlist not found.");
+  const order = await getOrderById(id);
+  if (!order) return res.status(404).send("Order not found.");
 
-  if (playlist.user_id !== req.user.id)
+  if (order.user_id !== req.user.id)
     return res
       .status(403)
-      .send("You do not have permission to access this playlist.");
+      .send("You do not have permission to access this order.");
 
-  req.playlist = playlist;
+  req.order = order;
   next();
 });
 
 router.get("/:id", (req, res) => {
-  res.send(req.playlist);
+  res.send(req.order);
 });
 
-router.get("/:id/tracks", async (req, res) => {
-  const tracks = await getTracksByPlaylistId(req.playlist.id);
-  res.send(tracks);
+router.get("/:id/products", async (req, res) => {
+  const products = await getProductsByOrderId(req.order.id);
+  res.send(products);
 });
 
-router.post("/:id/tracks", requireBody(["trackId"]), async (req, res) => {
-  const { trackId } = req.body;
-  const playlistTrack = await createPlaylistTrack(req.playlist.id, trackId);
-  res.status(201).send(playlistTrack);
+router.post("/:id/products", requireBody(["productId"]), async (req, res) => {
+  const { productId } = req.body;
+  const OrderProduct = await createOrderProduct(req.order.id, productId);
+  res.status(201).send(orderProduct);
 });
